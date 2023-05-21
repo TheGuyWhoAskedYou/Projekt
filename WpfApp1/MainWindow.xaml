@@ -1,0 +1,66 @@
+﻿<Window x:Class="WpfApp1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        Title="Výpočet čisté mzdy" Height="400" Width="400" WindowStartupLocation="CenterScreen">
+    <Grid Background="Beige">
+        <Label Content="Výpočet čisté mzdy pro rok 2023"
+               HorizontalAlignment="Left"
+               Margin="34,12,0,0"
+               VerticalAlignment="Top"
+               BorderBrush="Black"
+               BorderThickness="1"
+               Background="Wheat"
+               />
+        <Border Margin="34,52,34,22"
+                Background="Wheat"
+                BorderBrush="Black"
+                BorderThickness="1"
+                >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="19*"/>
+                    <RowDefinition Height="135*"/>
+                </Grid.RowDefinitions>
+                <Label Content="Typ vstupu:"
+                       Height="27"
+                       Width="70"
+                       Margin="0,25,235,0"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Top"
+                       Grid.RowSpan="2"
+                />
+                <Menu Height="27"
+                      Width="160"
+                      Margin="0,25,70,0"
+                      Grid.RowSpan="2"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      MenuItem.Click="Menu_Click"
+                      
+                      >
+                    <MenuItem Name="X"
+                              Header="Hrubá měsíční mzda"
+                              Height="26"
+                              Width="160"
+                              />
+                    <MenuItem Name="Y"
+                              Header="Čistá měsíční mzda"
+                              Height="26"
+                              Width="160"
+                              />
+
+                </Menu>
+
+
+
+            </Grid>
+
+        </Border>
+
+
+    </Grid>
+</Window>

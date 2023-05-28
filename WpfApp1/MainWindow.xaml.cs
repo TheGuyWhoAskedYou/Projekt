@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LiveCharts;
+
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
+using WpfApp1;
 
 namespace MzdovaKalkulacka
 {
@@ -43,12 +36,52 @@ namespace MzdovaKalkulacka
                 decimal.TryParse(EducationContributionsTextBox.Text, out decimal educationContributions) &&
                 decimal.TryParse(ResearchContributionsTextBox.Text, out decimal researchContributions))
             {
-                decimal taxBase = CalculateTaxBase(grossSalary, children, nurseryFee, serviceCarPrice, interestOnHousingLoan);
-                decimal tax = CalculateIncomeTax(taxBase);
-                decimal socialSecurityContribution = CalculateSocialSecurityContribution(grossSalary);
-                decimal healthInsuranceContribution = CalculateHealthInsuranceContribution(grossSalary);
-                decimal netSalary = CalculateNetSalary(grossSalary, tax, socialSecurityContribution, healthInsuranceContribution,
-                    pensionInsuranceContribution, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
+                if (grossSalary >= 17300)
+                {
+                    decimal taxBase = CalculateTaxBase(grossSalary, children, nurseryFee, serviceCarPrice, interestOnHousingLoan, donations, pensionInsuranceContribution, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
+                    decimal tax = CalculateIncomeTax(taxBase);
+
+                    // Výpočet sociálního pojištění
+                    decimal socialSecurityContributionRate = 0.065m; // Sazba 6,5%
+                    decimal socialSecurityContribution = grossSalary * socialSecurityContributionRate;
+
+                    // Výpočet zdravotního pojištění
+                    decimal healthInsuranceContributionRate = 0.045m; // Sazba 4,5%
+                    decimal healthInsuranceContribution = grossSalary * healthInsuranceContributionRate;
+
+                    // Výpočet čisté mzdy
+                    decimal netSalary = CalculateNetSalary(grossSalary, tax, socialSecurityContribution, healthInsuranceContribution,
+                        pensionInsuranceContribution, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
+
+                    // Zvýhodnění pro děti
+                    decimal childAllowance = CalculateChildAllowance(children);
+                    netSalary += childAllowance;
+
+                    // Přičtení daně na poplatníka
+                    decimal taxpayerAllowance = 2570;
+                    netSalary += taxpayerAllowance;
+
+                    // Výpočet záloh z daní příjmů
+                    decimal incomeTaxPrepayment = CalculateIncomeTaxPrepayment(netSalary, tax, children);
+
+                    // Aktualizace hodnot v grafu
+                    SocialSecuritySeries.Values = new ChartValues<decimal> { socialSecurityContribution };
+                    HealthInsuranceSeries.Values = new ChartValues<decimal> { healthInsuranceContribution };
+                    NetSalarySeries.Values = new ChartValues<decimal> { netSalary };
+                    TaxPrepaymentSeries.Values = new ChartValues<decimal> { incomeTaxPrepayment };
+                    NetSalaryTextBlock.Text = $"{netSalary.ToString("C")}";
+
+                    NetSalarySeries.LabelPoint = chartPoint => $"{chartPoint.Y} Kč";
+                    HealthInsuranceSeries.LabelPoint = chartPoint => $"{chartPoint.Y} Kč";
+                    SocialSecuritySeries.LabelPoint = chartPoint => $"{chartPoint.Y} Kč";
+                    TaxPrepaymentSeries.LabelPoint = chartPoint => $"{chartPoint.Y} Kč";
+
+                    Graf.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    MessageBox.Show("Minimální měsíční mzda je 17 300 Kč.");
+                }
             }
             else
             {
@@ -56,28 +89,52 @@ namespace MzdovaKalkulacka
             }
         }
 
-        private decimal CalculateTaxBase(decimal grossSalary, int children, decimal nurseryFee, decimal serviceCarPrice, decimal interestOnHousingLoan)
+
+        private decimal CalculateTaxBase(decimal grossSalary, int children, decimal nurseryFee, decimal serviceCarPrice, decimal interestOnHousingLoan,
+            decimal donations, decimal pensionInsuranceContribution, decimal lifeInsuranceContribution, decimal unionDues,
+            decimal educationContributions, decimal researchContributions)
         {
             decimal taxBase = grossSalary;
 
             // Odpočítávání nezdanitelných částí základu daně
-            taxBase -= nurseryFee;
-            taxBase -= interestOnHousingLoan;
+            if (nurseryFee > 0)
+                taxBase -= nurseryFee;
+            if (interestOnHousingLoan > 0)
+                taxBase -= interestOnHousingLoan;
+            if (donations > 0)
+                taxBase -= donations;
+            if (pensionInsuranceContribution > 0)
+                taxBase -= pensionInsuranceContribution;
+            if (lifeInsuranceContribution > 0)
+                taxBase -= lifeInsuranceContribution;
+            if (unionDues > 0)
+                taxBase -= unionDues;
+            if (educationContributions > 0)
+                taxBase -= educationContributions;
+            if (researchContributions > 0)
+                taxBase -= researchContributions;
 
-            // Zvýhodnění pro děti
-            decimal childAllowance = children switch
+            // Zvýhodnění pro studenta
+            if (isStudentTaxpayer)
             {
-                1 => 1520,
-                2 => 2690,
-                3 => 4020,
-                _ => 0
-            };
-            taxBase -= childAllowance;
+                decimal studentAllowance = 335;
+                taxBase -= studentAllowance;
+            }
+
+            // Základ daně před uplatněním slevy na invaliditu
+            decimal disabilityDeductionBase = taxBase;
+
+            // Sleva na invaliditu
+            if (isDisabilityTaxpayer)
+            {
+                decimal disabilityDeduction = disabilityDeductionBase * 0.25m; // Sleva ve výši 25% z čistého příjmu
+                taxBase -= disabilityDeduction;
+            }
 
             // Zvýhodnění pro manželku/manažela s nulovými příjmy
             if (hasZeroIncomeSpouse)
             {
-                decimal zeroIncomeSpouseAllowance = 2400;
+                decimal zeroIncomeSpouseAllowance = 2070;
                 taxBase -= zeroIncomeSpouseAllowance;
             }
 
@@ -89,58 +146,102 @@ namespace MzdovaKalkulacka
                 taxBase -= carExcess;
             }
 
+
+
             return taxBase;
+
         }
 
         private decimal CalculateIncomeTax(decimal taxBase)
         {
             decimal tax = 0;
 
-            if (isDisabilityTaxpayer)
+            if (taxBase <= 1000000)
             {
-                if (taxBase <= 15100)
-                {
-                    tax = taxBase * 0.15m;
-                }
-                else if (taxBase <= 100700)
-                {
-                    tax = 2265 + (taxBase - 15100) * 0.23m;
-                }
-                else
-                {
-                    tax = 23114 + (taxBase - 100700) * 0.33m;
-                }
+                tax = taxBase * 0.15m; // Daňová sazba 15% pro základ daně do 1 000 000 Kč
             }
             else
             {
-                if (taxBase <= 10600)
-                {
-                    tax = taxBase * 0.15m;
-                }
-                else if (taxBase <= 85528)
-                {
-                    tax = 1590 + (taxBase - 10600) * 0.23m;
-                }
-                else
-                {
-                    tax = 13830 + (taxBase - 85528) * 0.33m;
-                }
+                tax = 150000 + (taxBase - 1000000) * 0.23m; // Daňová sazba 23% pro základ daně nad 1 000 000 Kč
             }
 
             return tax;
         }
 
-        private decimal CalculateSocialSecurityContribution(decimal grossSalary)
+        private decimal CalculateIncomeTaxPrepayment(decimal netSalary, decimal tax, int children)
         {
-            decimal socialSecurityContribution = grossSalary * 0.0654m;
-            return socialSecurityContribution;
+            // Výpočet záloh z daní příjmů
+            decimal incomeTaxPrepayment = tax - CalculateTaxAllowances(netSalary, children);
+
+            // Omezení záloh z daní příjmů na čistou mzdu
+            if (incomeTaxPrepayment > netSalary)
+            {
+                incomeTaxPrepayment = netSalary;
+            }
+
+            return incomeTaxPrepayment;
         }
 
-        private decimal CalculateHealthInsuranceContribution(decimal grossSalary)
+        private decimal CalculateTaxAllowances(decimal netSalary, int children)
         {
-            decimal healthInsuranceContribution = grossSalary * 0.045m;
-            return healthInsuranceContribution;
+            decimal taxAllowances = 0;
+
+            // Sleva na poplatníka
+            decimal taxpayerAllowance = 2570;
+            taxAllowances += taxpayerAllowance;
+
+            // Sleva na studenta
+            if (isStudentTaxpayer)
+            {
+                decimal studentAllowance = 335;
+                taxAllowances += studentAllowance;
+            }
+
+            // Sleva na invaliditu
+            if (isDisabilityTaxpayer)
+            {
+                decimal disabilityDeductionBase = netSalary - taxAllowances;
+                decimal disabilityDeduction = disabilityDeductionBase * 0.25m; // Sleva ve výši 25% z čistého příjmu
+                taxAllowances += disabilityDeduction;
+            }
+
+            // Sleva na manžela/manaželku bez příjmů
+            if (hasZeroIncomeSpouse)
+            {
+                decimal zeroIncomeSpouseAllowance = 2070;
+                taxAllowances += zeroIncomeSpouseAllowance;
+            }
+
+            // Slevy na děti
+            decimal childAllowance = CalculateChildAllowance(children);
+            taxAllowances += childAllowance;
+
+            return taxAllowances;
         }
+
+        private decimal CalculateChildAllowance(int children)
+        {
+            decimal childAllowance = children switch
+            {
+                1 => 1267,
+                2 => 1860 + 1267,
+                3 => 2320 + 1267 + 1860,
+                4 => 2320 + 1267 + 1860 + 2320,
+                5 => 2320 + 1267 + 1860 + 2320 + 2320,
+                6 => 2320 + 1267 + 1860 + 2320 + 2320 + 2320,
+                7 => 2320 + 1267 + 1860 + 2320 + 2320 + 2320 + 2320,
+                8 => 2320 + 1267 + 1860 + 2320 + 2320 + 2320 + 2320 + 2320,
+                9 => 2320 + 1267 + 1860 + 2320 + 2320 + 2320 + 2320 + 2320 + 2320,
+                10 => 2320 + 1267 + 1860 + 2320 + 2320 + 2320 + 2320 + 2320 + 2320 + 2320,
+                _ => 0
+            };
+
+            return childAllowance;
+        }
+
+
+
+
 
         private decimal CalculateNetSalary(decimal grossSalary, decimal incomeTax, decimal socialSecurityContribution,
             decimal healthInsuranceContribution, decimal pensionInsuranceContribution, decimal lifeInsuranceContribution,
@@ -151,7 +252,77 @@ namespace MzdovaKalkulacka
                 educationContributions + researchContributions;
 
             decimal netSalary = grossSalary - deductions;
+
             return netSalary;
+            
         }
+
+
+
+
+
+        private void AnnualCalculationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (decimal.TryParse(GrossSalaryTextBox.Text, out decimal grossSalary) &&
+                int.TryParse(ChildrenTextBox.Text, out int children) &&
+                decimal.TryParse(NurseryFeeTextBox.Text, out decimal nurseryFee) &&
+                decimal.TryParse(ServiceCarPriceTextBox.Text, out decimal serviceCarPrice) &&
+                decimal.TryParse(InterestOnHousingLoanTextBox.Text, out decimal interestOnHousingLoan) &&
+                decimal.TryParse(DonationsTextBox.Text, out decimal donations) &&
+                decimal.TryParse(PensionInsuranceContributionsTextBox.Text, out decimal pensionInsuranceContribution) &&
+                decimal.TryParse(LifeInsuranceContributionTextBox.Text, out decimal lifeInsuranceContribution) &&
+                decimal.TryParse(UnionDuesTextBox.Text, out decimal unionDues) &&
+                decimal.TryParse(EducationContributionsTextBox.Text, out decimal educationContributions) &&
+                decimal.TryParse(ResearchContributionsTextBox.Text, out decimal researchContributions))
+            {
+                if (grossSalary >= 17300)
+                {
+                    decimal annualNetSalary = 0;
+
+                    // Perform the annual calculation based on the provided input values
+                    decimal taxBase = CalculateTaxBase(grossSalary, children, nurseryFee, serviceCarPrice, interestOnHousingLoan, donations, pensionInsuranceContribution, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
+                    decimal tax = CalculateIncomeTax(taxBase);
+                    decimal incomeTaxPrepayment = CalculateIncomeTaxPrepayment(grossSalary, tax, children);
+
+                    // Perform the calculation for annual net salary
+                    decimal annualSocialSecurityContribution = grossSalary * 0.065m * 12; // Assuming constant throughout the year
+                    decimal annualHealthInsuranceContribution = grossSalary * 0.045m * 12; // Assuming constant throughout the year
+                    decimal annualPensionInsuranceContribution = pensionInsuranceContribution * 12;
+                    decimal annualLifeInsuranceContribution = lifeInsuranceContribution * 12;
+                    decimal annualUnionDues = unionDues * 12;
+                    decimal annualEducationContributions = educationContributions * 12;
+                    decimal annualResearchContributions = researchContributions * 12;
+                    decimal annualIncomeTaxPrepayment = incomeTaxPrepayment * 12;
+
+                    decimal annualDeductions = annualSocialSecurityContribution + annualHealthInsuranceContribution +
+                        annualPensionInsuranceContribution + annualLifeInsuranceContribution + annualUnionDues +
+                        annualEducationContributions + annualResearchContributions + annualIncomeTaxPrepayment;
+
+                    annualNetSalary = grossSalary * 12 - annualDeductions;
+
+                    // Create a new instance of the AnnualCalculationWindow
+                    var annualCalculationWindow = new AnnualCalculationWindow();
+
+                    // Set the values in the AnnualCalculationWindow
+                    annualCalculationWindow.AnnualNetSalaryTextBlock.Text = $"{annualNetSalary:C}";
+                    annualCalculationWindow.AnnualGrossSalaryTextBlock.Text = $"{grossSalary * 12:C}";
+
+                    // Show the annual calculation window
+                    annualCalculationWindow.Show();
+                }
+                else
+                {
+                    MessageBox.Show("Minimální měsíční mzda je 17 300 Kč.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Zadejte platovou měsíční mzdu a ostatní vstupní hodnoty ve správném formátu.");
+            }
+        }
+
+
+
+
     }
 }

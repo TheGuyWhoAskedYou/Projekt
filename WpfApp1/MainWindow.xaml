@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
-        Title="Mzdová kalkulačka 2023" Height="800" Width="800" WindowStartupLocation="CenterScreen">
+        Title="Mzdová kalkulačka 2023" Height="1100" Width="800" WindowStartupLocation="CenterScreen">
     <Grid Background="Beige">
         <Label Content="Mzdová kalkulačka 2023"
                HorizontalAlignment="Left"
@@ -13,7 +14,9 @@
                VerticalAlignment="Top"
                BorderBrush="Black"
                BorderThickness="1"
-               Background="Wheat"/>
+               Background="Wheat"
+               FontSize="18"
+               Padding="5"/>
 
         <Border Margin="34,52,34,22"
                 Background="Wheat"
@@ -25,57 +28,91 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Label Grid.Row="0" Content="Hrubá měsíční mzda:" Margin="0,0,0,15" Grid.RowSpan="2"/>
-                <TextBox x:Name="GrossSalaryTextBox" Grid.Row="0" Margin="140,2,-40,2"/>
+                <Label Content="Hrubá měsíční mzda:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="GrossSalaryTextBox" Grid.Row="0" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <Label Content="Počet nezaopatřených dětí:" Margin="0,29,0,28" Grid.RowSpan="4"/>
-                <TextBox x:Name="ChildrenTextBox" Margin="155,3,-55,28" Grid.RowSpan="3" Grid.Row="1"/>
+                <Label Grid.Row="1" Content="Počet nezaopatřených dětí:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="ChildrenTextBox" Grid.Row="1" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <CheckBox Grid.Row="3" Content="Poplatník - student:" x:Name="StudentTaxpayerCheckBox" Margin="10,549,90,-528"/>
-                <CheckBox Grid.Row="3" Content="Poplatník - postižení:" x:Name="DisabilityTaxpayerCheckBox" Margin="10,527,90,-506"/>
+                <CheckBox Grid.Row="2" Content="Poplatník - student:" x:Name="StudentTaxpayerCheckBox" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <CheckBox Grid.Row="2" Content="Poplatník - postižení:" x:Name="DisabilityTaxpayerCheckBox" Margin="200,10,10,10" VerticalAlignment="Center" Padding="5"/>
 
-                <Label Grid.Row="3" Content="Školkovné:" Margin="0,424,0,-424"/>
-                <TextBox x:Name="NurseryFeeTextBox" Grid.Row="3" Margin="72,424,28,-424"/>
+                <Label Grid.Row="3" Content="Školkovné:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="NurseryFeeTextBox" Grid.Row="3" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <CheckBox Grid.Row="3" Content="Manžel/ka nemá vlastní příjmy vyšší než 68 000 Kč:" x:Name="ZeroIncomeSpouseCheckBox" Margin="10,506,90,-479"/>
+                <CheckBox Grid.Row="4" Content="Manžel/ka nemá vlastní příjmy vyšší než 68 000 Kč:" x:Name="ZeroIncomeSpouseCheckBox" Margin="10,7,0,0" VerticalAlignment="Top" Padding="5"/>
 
-                <Label Grid.Row="3" Content="Cena služebního auta používaného k soukromým účelům:" Margin="0,383,0,-383"/>
-                <TextBox x:Name="ServiceCarPriceTextBox" Grid.Row="3" Margin="315,383,-215,-383"/>
+                <Label Grid.Row="5" Content="Cena služebního auta používaného k soukromým účelům:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="ServiceCarPriceTextBox" Grid.Row="5" Margin="337,10,10,10" Padding="5" Text="0"/>
 
-                <Label Grid.Row="3" Content="Nezdanitelné části základu daně" Margin="0,296,0,-296"/>
-                <Label Grid.Row="3" Content="Úroky z úvěru na bydlení:" Margin="0,342,0,-342"/>
-                <TextBox x:Name="InterestOnHousingLoanTextBox" Grid.Row="3" Margin="181,342,-81,-342"/>
+                <Label Grid.Row="6" FontSize="20" Content="Nezdanitelné části základu daně" Margin="10,10,0,0" VerticalAlignment="Top" Padding="5" HorizontalAlignment="Left" Width="300"/>
+                <Label Grid.Row="7" Content="Úroky z úvěru na bydlení:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="InterestOnHousingLoanTextBox" Grid.Row="7" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <Label Grid.Row="3" Content="Dary, dárcovství krve, kostní dřeně…:" Margin="0,260,0,-260"/>
-                <TextBox x:Name="DonationsTextBox" Grid.Row="3" Margin="208,260,-108,-260"/>
+                <Label Grid.Row="8" Content="Dary, dárcovství krve, kostní dřeně…:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="DonationsTextBox" Grid.Row="8" Margin="223,10,10,10" Padding="5" Text="0"/>
 
-                <Label Grid.Row="3" Content="Příspěvky na penzijní připojištění nebo doplňkové penzijní spoření:" Margin="0,219,0,-219"/>
-                <TextBox x:Name="PensionInsuranceContributionsTextBox" Grid.Row="3" Margin="365,219,-265,-219"/>
+                <Label Grid.Row="9" Content="Příspěvky na penzijní připojištění nebo doplňkové penzijní spoření:" Margin="10,10,0,0" VerticalAlignment="Top" Padding="5"/>
+                <TextBox x:Name="PensionInsuranceContributionsTextBox" Grid.Row="9" Margin="390,10,10,10" Padding="5" Text="0"/>
 
-                <Label Grid.Row="3" Content="Příspěvek na životní pojištění:" Margin="0,168,0,-168"/>
-                <TextBox x:Name="LifeInsuranceContributionTextBox" Grid.Row="3" Margin="170,168,-70,-168"/>
+                <Label Grid.Row="10" Content="Příspěvek na životní pojištění:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="LifeInsuranceContributionTextBox" Grid.Row="10" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <Label Grid.Row="3" Content="Příspěvky odborům:" Margin="0,132,0,-132"/>
-                <TextBox x:Name="UnionDuesTextBox" Grid.Row="3" Margin="123,132,-23,-132"/>
+                <Label Grid.Row="11" Content="Příspěvky odborům:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="UnionDuesTextBox" Grid.Row="11" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <Label Grid.Row="3" Content="Příspěvky na vzdělání:" Margin="0,96,0,-96"/>
-                <TextBox x:Name="EducationContributionsTextBox" Grid.Row="3" Margin="123,97,-23,-97"/>
+                <Label Grid.Row="12" Content="Příspěvky na vzdělání:" Margin="10,10,0,0" Padding="5" Height="26" VerticalAlignment="Center"/>
+                <TextBox x:Name="EducationContributionsTextBox" Grid.Row="12" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <Label Grid.Row="3" Content="Příspěvky na výzkum:" Margin="0,61,0,-61"/>
-                <TextBox x:Name="ResearchContributionsTextBox" Grid.Row="3" Margin="123,61,-23,-61"/>
+                <Label Grid.Row="13" Content="Příspěvky na výzkum:" Margin="10,0,0,0" VerticalAlignment="Center" Padding="5"/>
+                <TextBox x:Name="ResearchContributionsTextBox" Grid.Row="13" Margin="200,10,10,10" Padding="5" Text="0"/>
 
-                <Button Grid.Row="3" Content="Spočítat" Width="100" Margin="115,549,115,-539" Click="CalculateButton_Click"/>
-                <Label Grid.Row="3" Content="Čistá mzda:" Margin="0,465,100,-455"/>
-                <TextBlock x:Name="NetSalaryTextBlock" Grid.Row="3" Margin="10,606,90,-584"/>
+                <Button Grid.Row="14" Content="Spočítat" Width="100" Margin="200,57,0,0" Click="CalculateButton_Click" Padding="5" RenderTransformOrigin="0.53,-1.437" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top"/>
+                <Button x:Name="AnnualCalculationButton" Height="30" Content="Vypočítat roční zúčtování" Click="AnnualCalculationButton_Click" Margin="380,57,200,0" Grid.Row="14" />
+                <Label Grid.Row="14" Content="Čistá mzda:" Margin="10,20,0,0" VerticalAlignment="Top" Padding="5"/>
+                <TextBlock x:Name="NetSalaryTextBlock" Grid.Row="14" FontSize="16" FontWeight="Bold" Margin="200,20,0,0" Padding="5" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" Width="520"/>
 
-                <!-- Newly added TextBox controls -->
-                <TextBox x:Name="TaxBaseTextBox" Grid.Row="3" Margin="195,155,-95,-155"/>
-                <TextBox x:Name="IncomeTaxTextBox" Grid.Row="3" Margin="195,190,-95,-190"/>
-                <TextBox x:Name="SocialSecurityContributionTextBox" Grid.Row="3" Margin="195,225,-95,-225"/>
-                <TextBox x:Name="HealthInsuranceContributionTextBox" Grid.Row="3" Margin="195,260,-95,-260"/>
-                <TextBox x:Name="NetSalaryTextBox" Grid.Row="3" Margin="195,295,-95,-295"/>
+                <Grid Grid.Row="14" Margin="10,99,10,-236">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Content="Složení vaší hrubé mzdy" Padding="5" HorizontalAlignment="Center" Grid.Column="1" Grid.Row="4" Margin="0,-5,0,5"/>
+
+                    <!-- Koláčový graf -->
+                    <lvc:PieChart Name="Graf" Grid.Row="4" Grid.ColumnSpan="2" Margin="10,20,10,-208" Visibility="Collapsed">
+                        <lvc:PieChart.Series>
+                            <lvc:PieSeries x:Name="SocialSecuritySeries" Title="Sociální pojištění" Values="0" DataLabels="True"/>
+                            <lvc:PieSeries x:Name="HealthInsuranceSeries" Title="Zdravotní pojištění" Values="0" DataLabels="True"/>
+                            <lvc:PieSeries x:Name="NetSalarySeries" Title="Čistá mzda" Values="0" DataLabels="True"/>
+                            <lvc:PieSeries x:Name="TaxPrepaymentSeries" Title="Záloha na daň z příjmu" Values="0" DataLabels="True"/>
+                        </lvc:PieChart.Series>
+                    </lvc:PieChart>
+                    <!-- Konec koláčového grafu -->
+                </Grid>
+                <!-- Konec grafu -->
+
             </Grid>
         </Border>
     </Grid>

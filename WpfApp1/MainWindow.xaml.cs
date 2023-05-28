@@ -38,7 +38,7 @@ namespace MzdovaKalkulacka
             {
                 if (grossSalary >= 17300)
                 {
-                    decimal taxBase = CalculateTaxBase(grossSalary, children, nurseryFee, serviceCarPrice, interestOnHousingLoan, donations, pensionInsuranceContribution, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
+                    decimal taxBase = CalculateTaxBase(grossSalary, children, serviceCarPrice);
                     decimal tax = CalculateIncomeTax(taxBase);
 
                     // Výpočet sociálního pojištění
@@ -50,8 +50,7 @@ namespace MzdovaKalkulacka
                     decimal healthInsuranceContribution = grossSalary * healthInsuranceContributionRate;
 
                     // Výpočet čisté mzdy
-                    decimal netSalary = CalculateNetSalary(grossSalary, tax, socialSecurityContribution, healthInsuranceContribution,
-                        pensionInsuranceContribution, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
+                    decimal netSalary = CalculateNetSalary(grossSalary, tax, socialSecurityContribution, healthInsuranceContribution);
 
                     // Zvýhodnění pro děti
                     decimal childAllowance = CalculateChildAllowance(children);
@@ -90,29 +89,9 @@ namespace MzdovaKalkulacka
         }
 
 
-        private decimal CalculateTaxBase(decimal grossSalary, int children, decimal nurseryFee, decimal serviceCarPrice, decimal interestOnHousingLoan,
-            decimal donations, decimal pensionInsuranceContribution, decimal lifeInsuranceContribution, decimal unionDues,
-            decimal educationContributions, decimal researchContributions)
+        private decimal CalculateTaxBase(decimal grossSalary, int children, decimal serviceCarPrice)
         {
             decimal taxBase = grossSalary;
-
-            // Odpočítávání nezdanitelných částí základu daně
-            if (nurseryFee > 0)
-                taxBase -= nurseryFee;
-            if (interestOnHousingLoan > 0)
-                taxBase -= interestOnHousingLoan;
-            if (donations > 0)
-                taxBase -= donations;
-            if (pensionInsuranceContribution > 0)
-                taxBase -= pensionInsuranceContribution;
-            if (lifeInsuranceContribution > 0)
-                taxBase -= lifeInsuranceContribution;
-            if (unionDues > 0)
-                taxBase -= unionDues;
-            if (educationContributions > 0)
-                taxBase -= educationContributions;
-            if (researchContributions > 0)
-                taxBase -= researchContributions;
 
             // Zvýhodnění pro studenta
             if (isStudentTaxpayer)
@@ -244,12 +223,9 @@ namespace MzdovaKalkulacka
 
 
         private decimal CalculateNetSalary(decimal grossSalary, decimal incomeTax, decimal socialSecurityContribution,
-            decimal healthInsuranceContribution, decimal pensionInsuranceContribution, decimal lifeInsuranceContribution,
-            decimal unionDues, decimal educationContributions, decimal researchContributions)
+            decimal healthInsuranceContribution)
         {
-            decimal deductions = incomeTax + socialSecurityContribution + healthInsuranceContribution +
-                pensionInsuranceContribution + lifeInsuranceContribution + unionDues +
-                educationContributions + researchContributions;
+            decimal deductions = incomeTax + socialSecurityContribution + healthInsuranceContribution;
 
             decimal netSalary = grossSalary - deductions;
 
@@ -280,7 +256,7 @@ namespace MzdovaKalkulacka
                     decimal annualNetSalary = 0;
 
                     // Perform the annual calculation based on the provided input values
-                    decimal taxBase = CalculateTaxBase(grossSalary, children, nurseryFee, serviceCarPrice, interestOnHousingLoan, donations, pensionInsuranceContribution, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
+                    decimal taxBase = CalculateTaxBase(grossSalary, children, serviceCarPrice);
                     decimal tax = CalculateIncomeTax(taxBase);
                     decimal incomeTaxPrepayment = CalculateIncomeTaxPrepayment(grossSalary, tax, children);
 
@@ -320,9 +296,5 @@ namespace MzdovaKalkulacka
                 MessageBox.Show("Zadejte platovou měsíční mzdu a ostatní vstupní hodnoty ve správném formátu.");
             }
         }
-
-
-
-
     }
 }

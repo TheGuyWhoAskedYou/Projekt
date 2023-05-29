@@ -10,7 +10,6 @@ namespace MzdovaKalkulacka
 {
     public partial class MainWindow : Window
     {
-        private bool hasZeroIncomeSpouse;
         private bool isStudentTaxpayer;
         private bool isDisabilityTaxpayer;
 
@@ -26,8 +25,6 @@ namespace MzdovaKalkulacka
                 bool.TryParse(StudentTaxpayerCheckBox.IsChecked.ToString(), out isStudentTaxpayer) &&
                 bool.TryParse(DisabilityTaxpayerCheckBox.IsChecked.ToString(), out isDisabilityTaxpayer) &&
                 decimal.TryParse(NurseryFeeTextBox.Text, out decimal nurseryFee) &&
-                bool.TryParse(ZeroIncomeSpouseCheckBox.IsChecked.ToString(), out hasZeroIncomeSpouse) &&
-                decimal.TryParse(ServiceCarPriceTextBox.Text, out decimal serviceCarPrice) &&
                 decimal.TryParse(InterestOnHousingLoanTextBox.Text, out decimal interestOnHousingLoan) &&
                 decimal.TryParse(DonationsTextBox.Text, out decimal donations) &&
                 decimal.TryParse(PensionInsuranceContributionsTextBox.Text, out decimal pensionInsuranceContribution) &&
@@ -36,7 +33,10 @@ namespace MzdovaKalkulacka
                 decimal.TryParse(EducationContributionsTextBox.Text, out decimal educationContributions) &&
                 decimal.TryParse(ResearchContributionsTextBox.Text, out decimal researchContributions))
             {
-                if (grossSalary >= 17300)
+                string formattedGrossSalary = grossSalary.ToString("N0");
+                string formattedLifeInsuranceContribution = lifeInsuranceContribution.ToString("N0");
+
+                if (grossSalary >= 17300 && grossSalary <= 600000)
                 {
                     decimal taxBase = CalculateTaxBase(grossSalary);
                     decimal tax = CalculateIncomeTax(taxBase);
@@ -52,7 +52,6 @@ namespace MzdovaKalkulacka
                     // Výpočet čisté mzdy
                     decimal netSalary = CalculateNetSalary(grossSalary, tax, socialSecurityContribution, healthInsuranceContribution);
 
-                    // Apply additional tax deductions
                     if (isStudentTaxpayer)
                     {
                         decimal studentAllowance = 335;
@@ -82,6 +81,7 @@ namespace MzdovaKalkulacka
                     HealthInsuranceSeries.Values = new ChartValues<decimal> { healthInsuranceContribution };
                     NetSalarySeries.Values = new ChartValues<decimal> { netSalary };
                     TaxPrepaymentSeries.Values = new ChartValues<decimal> { incomeTaxPrepayment };
+
                     NetSalaryTextBlock.Text = $"{netSalary.ToString("C1")}";
 
                     NetSalarySeries.LabelPoint = chartPoint => $"{chartPoint.Y} Kč";
@@ -93,7 +93,7 @@ namespace MzdovaKalkulacka
                 }
                 else
                 {
-                    MessageBox.Show("Minimální měsíční mzda je 17 300 Kč.");
+                    MessageBox.Show("Minimální hrubá měsíční mzda je 17 300 Kč a maximální 600 000 Kč.");
                 }
             }
             else
@@ -114,13 +114,13 @@ namespace MzdovaKalkulacka
         {
             decimal tax = 0;
 
-            if (taxBase <= 1000000)
+            if (taxBase <= 161296)
             {
-                tax = taxBase * 0.15m; // Daňová sazba 15% pro základ daně do 1 000 000 Kč
+                tax = taxBase * 0.15m; // Daňová sazba 15% pro základ daně do 161 296 Kč
             }
             else
             {
-                tax = 150000 + (taxBase - 1000000) * 0.23m; // Daňová sazba 23% pro základ daně nad 1 000 000 Kč
+                tax = taxBase * 0.23m; // Daňová sazba 23% pro základ daně nad 161 296 Kč
             }
 
             return tax;
@@ -131,11 +131,7 @@ namespace MzdovaKalkulacka
             // Výpočet záloh z daní příjmů
             decimal incomeTaxPrepayment = tax - CalculateTaxAllowances(children);
 
-            // Omezení záloh z daní příjmů na čistou mzdu
-            if (incomeTaxPrepayment > netSalary)
-            {
-                incomeTaxPrepayment = netSalary;
-            }
+            
 
             return incomeTaxPrepayment;
         }
@@ -161,13 +157,6 @@ namespace MzdovaKalkulacka
             {
                 decimal disabilityDeduction = 210; // Sleva ve výši 25% z čistého příjmu
                 taxAllowances += disabilityDeduction;
-            }
-
-            // Sleva na manžela/manaželku bez příjmů
-            if (hasZeroIncomeSpouse)
-            {
-                decimal zeroIncomeSpouseAllowance = 2070;
-                taxAllowances += zeroIncomeSpouseAllowance;
             }
 
             // Slevy na děti
@@ -218,10 +207,25 @@ namespace MzdovaKalkulacka
 
         private void AnnualCalculationButton_Click(object sender, RoutedEventArgs e)
         {
+            decimal CalculateRefund(decimal nurseryFee,
+            decimal interestOnHousingLoan, decimal donations, decimal lifeInsuranceContribution,
+            decimal unionDues, decimal educationContributions, decimal researchContributions)
+            {
+                decimal deductibleExpenses = nurseryFee + (interestOnHousingLoan + lifeInsuranceContribution
+                    + unionDues + educationContributions + researchContributions) * 0.15m;
+
+                if (donations >= 1000)
+                {
+                    deductibleExpenses += donations * 0.15m;
+                }
+
+                return deductibleExpenses;
+            }
+
+
             if (decimal.TryParse(GrossSalaryTextBox.Text, out decimal grossSalary) &&
                 int.TryParse(ChildrenTextBox.Text, out int children) &&
                 decimal.TryParse(NurseryFeeTextBox.Text, out decimal nurseryFee) &&
-                decimal.TryParse(ServiceCarPriceTextBox.Text, out decimal serviceCarPrice) &&
                 decimal.TryParse(InterestOnHousingLoanTextBox.Text, out decimal interestOnHousingLoan) &&
                 decimal.TryParse(DonationsTextBox.Text, out decimal donations) &&
                 decimal.TryParse(PensionInsuranceContributionsTextBox.Text, out decimal pensionInsuranceContribution) &&
@@ -230,44 +234,40 @@ namespace MzdovaKalkulacka
                 decimal.TryParse(EducationContributionsTextBox.Text, out decimal educationContributions) &&
                 decimal.TryParse(ResearchContributionsTextBox.Text, out decimal researchContributions))
             {
-                if (grossSalary >= 17300)
+
+                if (grossSalary >= 17300 && grossSalary <= 600000)
                 {
                     decimal annualNetSalary = 0;
 
-                    // Perform the annual calculation based on the provided input values
+                    // Provede výpočet ročního zúčtování na základě vložených hodnot
                     decimal taxBase = CalculateTaxBase(grossSalary);
                     decimal tax = CalculateIncomeTax(taxBase);
                     decimal incomeTaxPrepayment = CalculateIncomeTaxPrepayment(grossSalary, tax, children);
+                    decimal refund = CalculateRefund(nurseryFee, interestOnHousingLoan, donations, lifeInsuranceContribution, unionDues, educationContributions, researchContributions);
 
-                    // Perform the calculation for annual net salary
-                    decimal annualSocialSecurityContribution = grossSalary * 0.065m * 12; // Assuming constant throughout the year
-                    decimal annualHealthInsuranceContribution = grossSalary * 0.045m * 12; // Assuming constant throughout the year
-                    decimal annualPensionInsuranceContribution = pensionInsuranceContribution * 12;
-                    decimal annualLifeInsuranceContribution = lifeInsuranceContribution * 12;
-                    decimal annualUnionDues = unionDues * 12;
-                    decimal annualEducationContributions = educationContributions * 12;
-                    decimal annualResearchContributions = researchContributions * 12;
+                    // Provede výpočet ročního čístého příjmu
+                    decimal annualSocialSecurityContribution = grossSalary * 0.065m * 12;
+                    decimal annualHealthInsuranceContribution = grossSalary * 0.045m * 12;
                     decimal annualIncomeTaxPrepayment = incomeTaxPrepayment * 12;
 
-                    decimal annualDeductions = annualSocialSecurityContribution + annualHealthInsuranceContribution +
-                        annualPensionInsuranceContribution + annualLifeInsuranceContribution + annualUnionDues +
-                        annualEducationContributions + annualResearchContributions + annualIncomeTaxPrepayment;
+                    decimal annualDeductions = annualSocialSecurityContribution + annualHealthInsuranceContribution + annualIncomeTaxPrepayment;
 
                     annualNetSalary = grossSalary * 12 - annualDeductions;
 
-                    // Create a new instance of the AnnualCalculationWindow
+                    // Vytvoří novou instanci okna ročního zúčtování
                     var annualCalculationWindow = new AnnualCalculationWindow();
 
-                    // Set the values in the AnnualCalculationWindow
+                    // Nastaví hodnoty v textblock, které jsou v okně s ročním zúčtováním
                     annualCalculationWindow.AnnualNetSalaryTextBlock.Text = $"{annualNetSalary:C1}";
                     annualCalculationWindow.AnnualGrossSalaryTextBlock.Text = $"{grossSalary * 12:C1}";
+                    annualCalculationWindow.OverpaymentTextBlock.Text = $"{refund:C1}";
 
-                    // Show the annual calculation window
+                    // Otevře okno s ročním zúčtováním
                     annualCalculationWindow.Show();
                 }
                 else
                 {
-                    MessageBox.Show("Minimální měsíční mzda je 17 300 Kč.");
+                    MessageBox.Show("Minimální hrubá měsíční mzda je 17 300 Kč a maximální 600 000 Kč.");
                 }
             }
             else

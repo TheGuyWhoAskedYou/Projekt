@@ -38,7 +38,7 @@ namespace MzdovaKalkulacka
             {
                 if (grossSalary >= 17300)
                 {
-                    decimal taxBase = CalculateTaxBase(grossSalary, children, serviceCarPrice);
+                    decimal taxBase = CalculateTaxBase(grossSalary);
                     decimal tax = CalculateIncomeTax(taxBase);
 
                     // Výpočet sociálního pojištění
@@ -51,6 +51,20 @@ namespace MzdovaKalkulacka
 
                     // Výpočet čisté mzdy
                     decimal netSalary = CalculateNetSalary(grossSalary, tax, socialSecurityContribution, healthInsuranceContribution);
+
+                    // Apply additional tax deductions
+                    if (isStudentTaxpayer)
+                    {
+                        decimal studentAllowance = 335;
+                        netSalary += studentAllowance;
+                    }
+
+                    if (isDisabilityTaxpayer)
+                    {
+                        decimal disabilityDeduction = 210;
+                        netSalary += disabilityDeduction;
+                    }
+
 
                     // Zvýhodnění pro děti
                     decimal childAllowance = CalculateChildAllowance(children);
@@ -68,7 +82,7 @@ namespace MzdovaKalkulacka
                     HealthInsuranceSeries.Values = new ChartValues<decimal> { healthInsuranceContribution };
                     NetSalarySeries.Values = new ChartValues<decimal> { netSalary };
                     TaxPrepaymentSeries.Values = new ChartValues<decimal> { incomeTaxPrepayment };
-                    NetSalaryTextBlock.Text = $"{netSalary.ToString("C")}";
+                    NetSalaryTextBlock.Text = $"{netSalary.ToString("C1")}";
 
                     NetSalarySeries.LabelPoint = chartPoint => $"{chartPoint.Y} Kč";
                     HealthInsuranceSeries.LabelPoint = chartPoint => $"{chartPoint.Y} Kč";
@@ -89,46 +103,11 @@ namespace MzdovaKalkulacka
         }
 
 
-        private decimal CalculateTaxBase(decimal grossSalary, int children, decimal serviceCarPrice)
+        private decimal CalculateTaxBase(decimal grossSalary)
         {
             decimal taxBase = grossSalary;
 
-            // Zvýhodnění pro studenta
-            if (isStudentTaxpayer)
-            {
-                decimal studentAllowance = 335;
-                taxBase -= studentAllowance;
-            }
-
-            // Základ daně před uplatněním slevy na invaliditu
-            decimal disabilityDeductionBase = taxBase;
-
-            // Sleva na invaliditu
-            if (isDisabilityTaxpayer)
-            {
-                decimal disabilityDeduction = disabilityDeductionBase * 0.25m; // Sleva ve výši 25% z čistého příjmu
-                taxBase -= disabilityDeduction;
-            }
-
-            // Zvýhodnění pro manželku/manažela s nulovými příjmy
-            if (hasZeroIncomeSpouse)
-            {
-                decimal zeroIncomeSpouseAllowance = 2070;
-                taxBase -= zeroIncomeSpouseAllowance;
-            }
-
-            // Omezení daňového základu pro služební auto
-            decimal carLimit = 3000;
-            if (serviceCarPrice > carLimit)
-            {
-                decimal carExcess = serviceCarPrice - carLimit;
-                taxBase -= carExcess;
-            }
-
-
-
             return taxBase;
-
         }
 
         private decimal CalculateIncomeTax(decimal taxBase)
@@ -150,7 +129,7 @@ namespace MzdovaKalkulacka
         private decimal CalculateIncomeTaxPrepayment(decimal netSalary, decimal tax, int children)
         {
             // Výpočet záloh z daní příjmů
-            decimal incomeTaxPrepayment = tax - CalculateTaxAllowances(netSalary, children);
+            decimal incomeTaxPrepayment = tax - CalculateTaxAllowances(children);
 
             // Omezení záloh z daní příjmů na čistou mzdu
             if (incomeTaxPrepayment > netSalary)
@@ -161,13 +140,14 @@ namespace MzdovaKalkulacka
             return incomeTaxPrepayment;
         }
 
-        private decimal CalculateTaxAllowances(decimal netSalary, int children)
+        private decimal CalculateTaxAllowances(int children)
         {
             decimal taxAllowances = 0;
 
-            // Sleva na poplatníka
+            // Přičtení daně na poplatníka
             decimal taxpayerAllowance = 2570;
             taxAllowances += taxpayerAllowance;
+
 
             // Sleva na studenta
             if (isStudentTaxpayer)
@@ -179,8 +159,7 @@ namespace MzdovaKalkulacka
             // Sleva na invaliditu
             if (isDisabilityTaxpayer)
             {
-                decimal disabilityDeductionBase = netSalary - taxAllowances;
-                decimal disabilityDeduction = disabilityDeductionBase * 0.25m; // Sleva ve výši 25% z čistého příjmu
+                decimal disabilityDeduction = 210; // Sleva ve výši 25% z čistého příjmu
                 taxAllowances += disabilityDeduction;
             }
 
@@ -256,7 +235,7 @@ namespace MzdovaKalkulacka
                     decimal annualNetSalary = 0;
 
                     // Perform the annual calculation based on the provided input values
-                    decimal taxBase = CalculateTaxBase(grossSalary, children, serviceCarPrice);
+                    decimal taxBase = CalculateTaxBase(grossSalary);
                     decimal tax = CalculateIncomeTax(taxBase);
                     decimal incomeTaxPrepayment = CalculateIncomeTaxPrepayment(grossSalary, tax, children);
 
@@ -280,8 +259,8 @@ namespace MzdovaKalkulacka
                     var annualCalculationWindow = new AnnualCalculationWindow();
 
                     // Set the values in the AnnualCalculationWindow
-                    annualCalculationWindow.AnnualNetSalaryTextBlock.Text = $"{annualNetSalary:C}";
-                    annualCalculationWindow.AnnualGrossSalaryTextBlock.Text = $"{grossSalary * 12:C}";
+                    annualCalculationWindow.AnnualNetSalaryTextBlock.Text = $"{annualNetSalary:C1}";
+                    annualCalculationWindow.AnnualGrossSalaryTextBlock.Text = $"{grossSalary * 12:C1}";
 
                     // Show the annual calculation window
                     annualCalculationWindow.Show();

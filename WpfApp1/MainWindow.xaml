@@ -81,7 +81,7 @@
                 <TextBox x:Name="ResearchContributionsTextBox" Grid.Row="13" Margin="200,10,10,10" Padding="5" Text="0"/>
 
                 <Button Grid.Row="14" Content="Spočítat" Width="100" Margin="200,57,0,0" Click="CalculateButton_Click" Padding="5" RenderTransformOrigin="0.53,-1.437" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top"/>
-                <Button x:Name="AnnualCalculationButton" Height="30" Content="Vypočítat roční zúčtování" Click="AnnualCalculationButton_Click" Margin="380,57,200,0" Grid.Row="14" />
+                <Button x:Name="AnnualCalculationButton" Height="30" Content="Vypočítat roční zúčtování" Click="AnnualCalculationButton_Click" Margin="380,57,0,0" Grid.Row="14" HorizontalAlignment="Left" Width="150" />
                 <Label Grid.Row="14" Content="Čistá mzda:" Margin="10,20,0,0" VerticalAlignment="Top" Padding="5"/>
                 <TextBlock x:Name="NetSalaryTextBlock" Grid.Row="14" FontSize="16" FontWeight="Bold" Margin="200,20,0,0" Padding="5" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" Width="520"/>
 

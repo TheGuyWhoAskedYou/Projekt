@@ -18,6 +18,11 @@ namespace MzdovaKalkulacka
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Konečný výpočet a aktualizace grafu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
             if (decimal.TryParse(GrossSalaryTextBox.Text, out decimal grossSalary) &&
@@ -102,7 +107,11 @@ namespace MzdovaKalkulacka
             }
         }
 
-
+        /// <summary>
+        /// Nastaví základní daň
+        /// </summary>
+        /// <param name="grossSalary"></param>
+        /// <returns></returns>
         private decimal CalculateTaxBase(decimal grossSalary)
         {
             decimal taxBase = grossSalary;
@@ -110,6 +119,11 @@ namespace MzdovaKalkulacka
             return taxBase;
         }
 
+        /// <summary>
+        /// Výpočet daně
+        /// </summary>
+        /// <param name="taxBase"></param>
+        /// <returns></returns>
         private decimal CalculateIncomeTax(decimal taxBase)
         {
             decimal tax = 0;
@@ -126,6 +140,13 @@ namespace MzdovaKalkulacka
             return tax;
         }
 
+        /// <summary>
+        /// Vypočítá zálohy z daní příjmů
+        /// </summary>
+        /// <param name="netSalary"></param>
+        /// <param name="tax"></param>
+        /// <param name="children"></param>
+        /// <returns></returns>
         private decimal CalculateIncomeTaxPrepayment(decimal netSalary, decimal tax, int children)
         {
             // Výpočet záloh z daní příjmů
@@ -136,6 +157,11 @@ namespace MzdovaKalkulacka
             return incomeTaxPrepayment;
         }
 
+        /// <summary>
+        /// Vypočítá slevu na dani
+        /// </summary>
+        /// <param name="children"></param>
+        /// <returns></returns>
         private decimal CalculateTaxAllowances(int children)
         {
             decimal taxAllowances = 0;
@@ -155,7 +181,7 @@ namespace MzdovaKalkulacka
             // Sleva na invaliditu
             if (isDisabilityTaxpayer)
             {
-                decimal disabilityDeduction = 210; // Sleva ve výši 25% z čistého příjmu
+                decimal disabilityDeduction = 210;
                 taxAllowances += disabilityDeduction;
             }
 
@@ -166,6 +192,11 @@ namespace MzdovaKalkulacka
             return taxAllowances;
         }
 
+        /// <summary>
+        /// Vypočítá slevu na děti
+        /// </summary>
+        /// <param name="children"></param>
+        /// <returns></returns>
         private decimal CalculateChildAllowance(int children)
         {
             decimal childAllowance = children switch
@@ -189,7 +220,14 @@ namespace MzdovaKalkulacka
 
 
 
-
+        /// <summary>
+        /// Vypočítá čistou mzdu
+        /// </summary>
+        /// <param name="grossSalary"></param>
+        /// <param name="incomeTax"></param>
+        /// <param name="socialSecurityContribution"></param>
+        /// <param name="healthInsuranceContribution"></param>
+        /// <returns></returns>
         private decimal CalculateNetSalary(decimal grossSalary, decimal incomeTax, decimal socialSecurityContribution,
             decimal healthInsuranceContribution)
         {
@@ -204,7 +242,11 @@ namespace MzdovaKalkulacka
 
 
 
-
+        /// <summary>
+        /// Vypočítá roční zúčtování
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AnnualCalculationButton_Click(object sender, RoutedEventArgs e)
         {
             decimal CalculateRefund(decimal nurseryFee,
